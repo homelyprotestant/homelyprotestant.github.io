@@ -136,12 +136,14 @@
       }
 
       function applyClip() {
-        if (!topImage || !imageSize) return;
+        if (!topImage) return;
 
-        const x = Math.max(0, Math.min(imageSize.x, imageSize.x * ratio));
+        // Clip is in the overlay's own pixel space, which may differ from the base image.
+        const topSize = topImage.getContentSize();
+        const x = Math.max(0, Math.min(topSize.x, topSize.x * ratio));
         // Show the transformed image only to the right of the curtain.
         topImage.setClip(
-          new OpenSeadragon.Rect(x, 0, imageSize.x - x, imageSize.y)
+          new OpenSeadragon.Rect(x, 0, topSize.x - x, topSize.y)
         );
       }
 
@@ -159,7 +161,7 @@
           rect.height * 0.5
         );
         const viewportPoint = viewer.viewport.pointFromPixel(pixel, true);
-        const imagePoint = topImage.viewportToImageCoordinates(viewportPoint);
+        const imagePoint = baseImage.viewportToImageCoordinates(viewportPoint);
         ratio = Math.max(0, Math.min(1, imagePoint.x / imageSize.x));
         applyClip();
       }

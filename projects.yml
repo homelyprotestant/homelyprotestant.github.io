@@ -9,6 +9,16 @@
       ended: ""
       funding: ""
 
+    - path: curtain2/index.html
+      image: curtain2/39414.jpg
+      title: "Curtain Viewer 2"
+      author: OpenSeadragon
+      subtitle: "Image comparison"
+      description: "Interactive curtain comparison of 39414 and Transformed 39409."
+      started: "2026"
+      ended: ""
+      funding: ""
+
     - path: https://www.nsf.gov/ 
       image: https://nsf-gov-resources.nsf.gov/styles/featured_content_tablet/s3/2023-10/NSF_Official_logo_Med_Res_600ppi_rectangle.png
       title: "Exploring "

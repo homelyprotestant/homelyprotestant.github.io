@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curtain Viewer — 39414 / Transformed 39409</title>
+  <script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/openseadragon.min.js"></script>
+  <style>
+    :root {
+      --paper: #f3efe6;
+      --accent: #c45c26;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      background: #0f0e0c;
+      color: var(--paper);
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    }
+
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #viewer {
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(1200px 700px at 50% 20%, #2a241c 0%, #0f0e0c 60%),
+        #0f0e0c;
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      background: #0f0e0c;
+      transition: opacity 280ms ease, visibility 280ms ease;
+    }
+
+    .loading.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loading-card {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      color: var(--paper);
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid rgba(243, 239, 230, 0.18);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="viewer"></div>
+
+    <div class="loading" id="loading">
+      <div class="loading-card">
+        <div class="spinner" aria-hidden="true"></div>
+        <div>Loading images…</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // Left of the curtain: 39414 (base layer)
+      // Right of the curtain: Transformed39409 (clipped overlay)
+      const IMAGE_LEFT = "39414.jpg";
+      const IMAGE_RIGHT = "Transformed39409.jpg";
+
+      const loadingEl = document.getElementById("loading");
+      const viewerEl = document.getElementById("viewer");
+
+      let ratio = 0.5;
+      let baseImage = null;
+      let topImage = null;
+      let imageSize = null;
+
+      const viewer = OpenSeadragon({
+        id: "viewer",
+        prefixUrl: "https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/images/",
+        tileSources: {
+          type: "image",
+          url: IMAGE_LEFT,
+        },
+        showNavigator: true,
+        navigatorPosition: "TOP_RIGHT",
+        navigatorSizeRatio: 0.14,
+        animationTime: 0.8,
+        blendTime: 0.1,
+        constrainDuringPan: true,
+        maxZoomPixelRatio: 3,
+        minZoomImageRatio: 0.8,
+        visibilityRatio: 0.8,
+        zoomPerScroll: 1.2,
+        gestureSettingsMouse: {
+          clickToZoom: false,
+          dblClickToZoom: true,
+        },
+      });
+
+      function syncWorld() {
+        if (!baseImage || !topImage) return;
+        const bounds = baseImage.getBounds();
+        topImage.setPosition(bounds.getTopLeft(), true);
+        topImage.setWidth(bounds.width, true);
+      }
+
+      function applyClip() {
+        if (!topImage) return;
+
+        // Clip is in the overlay's own pixel space, which may differ from the base image.
+        const topSize = topImage.getContentSize();
+        const x = Math.max(0, Math.min(topSize.x, topSize.x * ratio));
+        // Show the transformed image only to the right of the curtain.
+        topImage.setClip(
+          new OpenSeadragon.Rect(x, 0, topSize.x - x, topSize.y)
+        );
+      }
+
+      function refreshCurtain() {
+        syncWorld();
+        applyClip();
+      }
+
+      function setRatioFromClientX(clientX) {
+        const rect = viewerEl.getBoundingClientRect();
+        if (!rect.width || !topImage || !imageSize) return;
+
+        const pixel = new OpenSeadragon.Point(
+          clientX - rect.left,
+          rect.height * 0.5
+        );
+        const viewportPoint = viewer.viewport.pointFromPixel(pixel, true);
+        const imagePoint = baseImage.viewportToImageCoordinates(viewportPoint);
+        ratio = Math.max(0, Math.min(1, imagePoint.x / imageSize.x));
+        applyClip();
+      }
+
+      viewerEl.addEventListener("pointermove", (event) => {
+        if (event.buttons) return; // keep pan/drag from fighting the curtain
+        setRatioFromClientX(event.clientX);
+      });
+
+      viewer.addHandler("open", function () {
+        baseImage = viewer.world.getItemAt(0);
+        imageSize = baseImage.getContentSize();
+
+        viewer.addTiledImage({
+          tileSource: {
+            type: "image",
+            url: IMAGE_RIGHT,
+          },
+          index: 1,
+          opacity: 1,
+          success: function (event) {
+            topImage = event.item;
+            refreshCurtain();
+            loadingEl.classList.add("is-hidden");
+          },
+          error: function () {
+            loadingEl.querySelector(".loading-card div:last-child").textContent =
+              "Could not load Transformed39409.jpg";
+          },
+        });
+      });
+
+      viewer.addHandler("animation", refreshCurtain);
+      viewer.addHandler("animation-finish", refreshCurtain);
+      viewer.addHandler("resize", refreshCurtain);
+    })();
+  </script>
+</body>
+</html>

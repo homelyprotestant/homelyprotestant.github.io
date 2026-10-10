@@ -3,6 +3,7 @@ project:
   output-dir: docs
   resources:
     - curtain
+    - curtain2
 
 # Meta
 description-meta: "Quarto Academic Website Template adapted by Dr. Gang He"
@@ -36,7 +37,9 @@ website:
           - text: Grants
             href: projects.qmd
           - text: Curtain Viewer
-            href: curtain/index.html                               
+            href: curtain/index.html
+          - text: Curtain Viewer 2
+            href: curtain2/index.html                               
       - text: Teaching # Comment the Teaching part out to remove the Teaching page
         href: teaching.qmd
       - text: Outreach
