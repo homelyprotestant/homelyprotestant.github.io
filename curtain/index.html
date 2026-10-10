@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curtain Viewer — 39421 / Transformed 39412</title>
+  <script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/openseadragon.min.js"></script>
+  <style>
+    :root {
+      --ink: #1a1714;
+      --paper: #f3efe6;
+      --muted: #8a8378;
+      --accent: #c45c26;
+      --panel: rgba(26, 23, 20, 0.72);
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      background: #0f0e0c;
+      color: var(--paper);
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    }
+
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #viewer {
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(1200px 700px at 50% 20%, #2a241c 0%, #0f0e0c 60%),
+        #0f0e0c;
+    }
+
+    .osd-toolbar {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      z-index: 30;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      max-width: min(920px, calc(100% - 36px));
+      padding: 12px 14px;
+      border: 1px solid rgba(243, 239, 230, 0.12);
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      transform: translateX(-50%);
+    }
+
+    .brand {
+      display: grid;
+      gap: 2px;
+      min-width: 180px;
+      padding-right: 8px;
+      border-right: 1px solid rgba(243, 239, 230, 0.14);
+      margin-right: 4px;
+    }
+
+    .brand strong {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .brand span {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .labels {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid rgba(243, 239, 230, 0.14);
+      background: rgba(15, 14, 12, 0.45);
+      font-size: 12px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 1px;
+    }
+
+    .swatch.before {
+      background: #d7c7a8;
+    }
+
+    .swatch.after {
+      background: var(--accent);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    .side-label {
+      position: absolute;
+      top: 18px;
+      z-index: 25;
+      padding: 8px 12px;
+      border: 1px solid rgba(243, 239, 230, 0.14);
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .side-label.left {
+      left: 70px;
+    }
+
+    .side-label.right {
+      right: 18px;
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      background: #0f0e0c;
+      transition: opacity 280ms ease, visibility 280ms ease;
+    }
+
+    .loading.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loading-card {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      color: var(--paper);
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid rgba(243, 239, 230, 0.18);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .brand {
+        border-right: 0;
+        padding-right: 0;
+        margin-right: 0;
+        min-width: 0;
+        width: 100%;
+      }
+
+      .hint {
+        width: 100%;
+      }
+
+      .osd-toolbar {
+        bottom: 12px;
+      }
+
+      .side-label.left {
+        left: 58px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="osd-toolbar">
+      <div class="brand">
+        <strong>Curtain Viewer</strong>
+        <span>OpenSeadragon comparison</span>
+      </div>
+      <div class="labels">
+        <div class="chip"><span class="swatch before"></span>39421</div>
+        <div class="chip"><span class="swatch after"></span>Transformed 39412</div>
+      </div>
+      <div class="hint">Move cursor to compare · scroll to zoom · click-drag to pan</div>
+    </div>
+
+    <div class="side-label left">39421</div>
+    <div class="side-label right">Transformed 39412</div>
+
+    <div id="viewer"></div>
+
+    <div class="loading" id="loading">
+      <div class="loading-card">
+        <div class="spinner" aria-hidden="true"></div>
+        <div>Loading images…</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // Left of the curtain: 39421 (base layer)
+      // Right of the curtain: Transformed39412 (clipped overlay)
+      const IMAGE_LEFT = "39421.jpg";
+      const IMAGE_RIGHT = "Transformed39412.jpg";
+
+      const loadingEl = document.getElementById("loading");
+      const viewerEl = document.getElementById("viewer");
+
+      let ratio = 0.5;
+      let baseImage = null;
+      let topImage = null;
+      let imageSize = null;
+
+      const viewer = OpenSeadragon({
+        id: "viewer",
+        prefixUrl: "https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/images/",
+        tileSources: {
+          type: "image",
+          url: IMAGE_LEFT,
+        },
+        showNavigator: true,
+        navigatorPosition: "TOP_RIGHT",
+        navigatorSizeRatio: 0.14,
+        animationTime: 0.8,
+        blendTime: 0.1,
+        constrainDuringPan: true,
+        maxZoomPixelRatio: 3,
+        minZoomImageRatio: 0.8,
+        visibilityRatio: 0.8,
+        zoomPerScroll: 1.2,
+        gestureSettingsMouse: {
+          clickToZoom: false,
+          dblClickToZoom: true,
+        },
+      });
+
+      function syncWorld() {
+        if (!baseImage || !topImage) return;
+        const bounds = baseImage.getBounds();
+        topImage.setPosition(bounds.getTopLeft(), true);
+        topImage.setWidth(bounds.width, true);
+      }
+
+      function applyClip() {
+        if (!topImage || !imageSize) return;
+
+        const x = Math.max(0, Math.min(imageSize.x, imageSize.x * ratio));
+        // Show the transformed image only to the right of the curtain.
+        topImage.setClip(
+          new OpenSeadragon.Rect(x, 0, imageSize.x - x, imageSize.y)
+        );
+      }
+
+      function refreshCurtain() {
+        syncWorld();
+        applyClip();
+      }
+
+      function setRatioFromClientX(clientX) {
+        const rect = viewerEl.getBoundingClientRect();
+        if (!rect.width || !topImage || !imageSize) return;
+
+        const pixel = new OpenSeadragon.Point(
+          clientX - rect.left,
+          rect.height * 0.5
+        );
+        const viewportPoint = viewer.viewport.pointFromPixel(pixel, true);
+        const imagePoint = topImage.viewportToImageCoordinates(viewportPoint);
+        ratio = Math.max(0, Math.min(1, imagePoint.x / imageSize.x));
+        applyClip();
+      }
+
+      viewerEl.addEventListener("pointermove", (event) => {
+        if (event.buttons) return; // keep pan/drag from fighting the curtain
+        setRatioFromClientX(event.clientX);
+      });
+
+      viewer.addHandler("open", function () {
+        baseImage = viewer.world.getItemAt(0);
+        imageSize = baseImage.getContentSize();
+
+        viewer.addTiledImage({
+          tileSource: {
+            type: "image",
+            url: IMAGE_RIGHT,
+          },
+          index: 1,
+          opacity: 1,
+          success: function (event) {
+            topImage = event.item;
+            refreshCurtain();
+            loadingEl.classList.add("is-hidden");
+          },
+          error: function () {
+            loadingEl.querySelector(".loading-card div:last-child").textContent =
+              "Could not load Transformed39412.jpg";
+          },
+        });
+      });
+
+      viewer.addHandler("animation", refreshCurtain);
+      viewer.addHandler("animation-finish", refreshCurtain);
+      viewer.addHandler("resize", refreshCurtain);
+    })();
+  </script>
+</body>
+</html>

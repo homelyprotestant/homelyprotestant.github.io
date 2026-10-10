@@ -1,4 +1,14 @@
 
+    - path: curtain/index.html
+      image: curtain/39421.jpg
+      title: "Curtain Viewer"
+      author: OpenSeadragon
+      subtitle: "Image comparison"
+      description: "Interactive curtain comparison of 39421 and Transformed 39412."
+      started: "2026"
+      ended: ""
+      funding: ""
+
     - path: https://www.nsf.gov/ 
       image: https://nsf-gov-resources.nsf.gov/styles/featured_content_tablet/s3/2023-10/NSF_Official_logo_Med_Res_600ppi_rectangle.png
       title: "Exploring "
