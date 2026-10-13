@@ -5,6 +5,7 @@ project:
     - curtain
     - curtain2
     - atom-space
+    - production-cls
 
 # Meta
 description-meta: "Quarto Academic Website Template adapted by Dr. Gang He"
@@ -41,8 +42,10 @@ website:
             href: curtain/index.html
           - text: Curtain Viewer 2
             href: curtain2/index.html
-          - text: Painting Embedding Map
+          - text: Painting Embedding Map (VHM-B-16b)
             href: atom-space/index.html
+          - text: Painting Embedding Map (production VHM-B-16)
+            href: production-cls/index.html
       - text: Teaching # Comment the Teaching part out to remove the Teaching page
         href: teaching.qmd
       - text: Outreach
