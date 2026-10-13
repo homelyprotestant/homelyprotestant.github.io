@@ -6,6 +6,7 @@ project:
     - curtain2
     - atom-space
     - production-cls
+    - sparse-cls
 
 # Meta
 description-meta: "Quarto Academic Website Template adapted by Dr. Gang He"
@@ -46,6 +47,8 @@ website:
             href: atom-space/index.html
           - text: Painting Embedding Map (production VHM-B-16)
             href: production-cls/index.html
+          - text: Painting Sparse-Weight Map (Sep 19 VHM-B-16b)
+            href: sparse-cls/index.html
       - text: Teaching # Comment the Teaching part out to remove the Teaching page
         href: teaching.qmd
       - text: Outreach
